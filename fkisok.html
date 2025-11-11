@@ -1,0 +1,239 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Wellness USA</title>
+
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+  height:100%;
+  width:100%;
+  font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  background:#2e2e2e;   /* solid grey */
+  color:#fff;
+  overflow:hidden;
+}
+
+/* ---------- Vertical Wheel Container ---------- */
+.wheel {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  height:100vh;
+  width:100%;
+  overflow-y:auto;       /* mouse wheel + touch */
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  padding:10vh 0;
+  gap:2.5vh;
+  perspective:1000px;    /* for 3D depth */
+  background:#2e2e2e;
+}
+
+/* Scrollbar (visible on desktop, can be hidden if you want) */
+.wheel::-webkit-scrollbar {
+  width:8px;
+}
+.wheel::-webkit-scrollbar-track {
+  background:#2e2e2e;
+}
+.wheel::-webkit-scrollbar-thumb {
+  background:#555;
+  border-radius:4px;
+}
+
+/* Top & bottom space so first/last can reach center */
+.spacer {
+  height:20vh;
+}
+
+/* ---------- App Row (icon + name) ---------- */
+.card {
+  width:80%;
+  max-width:600px;
+  transform-origin:center center;
+  transition:transform 0.18s ease-out, opacity 0.18s ease-out, box-shadow 0.18s ease-out;
+  opacity:0;             /* will be set in JS */
+}
+
+.card a {
+  text-decoration:none;
+  color:inherit;
+  display:flex;
+  align-items:center;
+  gap:1rem;
+  padding:0.9rem 1.2rem;
+  border-radius:14px;
+  background:#3b3b3b;
+}
+
+/* Icon */
+.card .icon {
+  flex:0 0 64px;
+  height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.card .icon img {
+  max-width:64px;
+  max-height:64px;
+  object-fit:contain;
+  display:block;
+}
+
+/* Text */
+.card .info {
+  flex:1;
+}
+.card .info .name {
+  font-size:1.2rem;
+  font-weight:bold;
+  margin-bottom:0.25rem;
+}
+.card .info .subtitle {
+  font-size:0.85rem;
+  color:#c0c0c0;
+}
+
+/* Smaller screens */
+@media (max-width:600px) {
+  .card {
+    width:90%;
+  }
+  .card .icon {
+    flex:0 0 52px;
+    height:52px;
+  }
+  .card .icon img {
+    max-width:52px;
+    max-height:52px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="wheel">
+
+  <div class="spacer"></div>
+
+  <!-- YouTube -->
+  <div class="card">
+    <a href="https://www.youtube.com">
+      <div class="icon">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" alt="YouTube">
+      </div>
+      <div class="info">
+        <div class="name">YouTube</div>
+        <div class="subtitle">Open YouTube app / website</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- IR Pod -->
+  <div class="card">
+    <a href="http://10.10.52.243:8080/webvisu.htm">
+      <div class="icon">
+        <img src="file:///storage/emulated/0/DCIM/WSALogo.png" alt="IR Pod">
+      </div>
+      <div class="info">
+        <div class="name">IR Pod</div>
+        <div class="subtitle">Open IR Pod WebVisu</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Netflix -->
+  <div class="card">
+    <a href="https://www.netflix.com">
+      <div class="icon">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix">
+      </div>
+      <div class="info">
+        <div class="name">Netflix</div>
+        <div class="subtitle">Launch Netflix</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Spotify -->
+  <div class="card">
+    <a href="intent:#Intent;launchFlags=0x10200000;component=com.spotify.music/.MainActivity;end">
+      <div class="icon">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" alt="Spotify">
+      </div>
+      <div class="info">
+        <div class="name">Spotify</div>
+        <div class="subtitle">Open Spotify app</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="spacer"></div>
+
+</div>
+
+<script>
+(function() {
+  const wheel = document.querySelector('.wheel');
+  const cards = Array.from(document.querySelectorAll('.card'));
+
+  function updateWheel() {
+    const rect = wheel.getBoundingClientRect();
+    const centerY = rect.top + rect.height / 2;
+
+    cards.forEach(card => {
+      const cRect = card.getBoundingClientRect();
+      const cardCenter = cRect.top + cRect.height / 2;
+
+      // distance from center normalized to -1..1
+      const dist = (cardCenter - centerY) / (rect.height / 2);
+      const abs = Math.min(Math.abs(dist), 1.2);  // allow a bit >1 for hiding
+
+      // Rotate around X as if on a big wheel
+      const angle = dist * 55;                // degrees, positive = tilt away
+      // Bring front item slightly "out" of the screen
+      const depth = Math.max(0, 1 - abs);     // 1 in center, 0 at far
+      const translateZ = depth * 140;         // px
+      const scale = 1 + depth * 0.25;        // up to ~1.25 in center
+
+      // Opacity: hide items that are "back side" of wheel
+      let opacity;
+      if (abs > 1.0) {
+        opacity = 0;                          // fully hidden in the back
+      } else {
+        opacity = 0.3 + depth * 0.7;          // 0.3 at edges -> 1 in center
+      }
+
+      // Shadow for depth (stronger in front, almost none at back)
+      const shadowStrength = depth;           // 0..1
+      const shadowY = 12 * shadowStrength;
+      const shadowBlur = 35 * shadowStrength;
+      const shadowAlpha = 0.65 * shadowStrength;
+
+      card.style.transform =
+        `translateZ(${translateZ.toFixed(1)}px) rotateX(${angle.toFixed(1)}deg) scale(${scale.toFixed(3)})`;
+      card.style.opacity = opacity.toFixed(3);
+      card.style.zIndex = String(100 + Math.round(depth * 100));
+      card.style.boxShadow =
+        shadowStrength > 0
+          ? `0 ${shadowY.toFixed(1)}px ${shadowBlur.toFixed(1)}px rgba(0,0,0,${shadowAlpha.toFixed(2)})`
+          : 'none';
+    });
+  }
+
+  updateWheel();
+  wheel.addEventListener('scroll', () => {
+    window.requestAnimationFrame(updateWheel);
+  });
+  window.addEventListener('resize', updateWheel);
+})();
+</script>
+
+</body>
+</html>
