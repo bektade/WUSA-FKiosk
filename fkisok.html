@@ -25,7 +25,7 @@ html, body {
   display:flex;
   align-items:center;
   justify-content:center;
-  perspective:100000px;
+  perspective:1000px;
   background:#2e2e2e;
   touch-action:none;
 }
@@ -34,13 +34,15 @@ html, body {
 .card {
   position:absolute;
   left:50%;
-  top:35%;
+  top:40%;
   width:80%;
   max-width:600px;
   transform-origin:center center;
   transform-style:preserve-3d;
-  transition:transform 0.15s ease-out, opacity 0.15s ease-out, box-shadow 0.15s ease-out;
   opacity:0;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 10px 25px rgba(0,0,0,0.25), 0 4px 10px rgba(0,0,0,0.2);
 }
 
 .card a {
@@ -48,33 +50,35 @@ html, body {
   color:inherit;
   display:flex;
   align-items:center;
-  gap:10rem;
-  padding:0.9rem 1.2rem;
-  border-radius:14px;
-  background:#3b3b3b;
+  gap:2rem;
+  padding:1rem 1.5rem;
+  border-radius:inherit;
+  background:linear-gradient(145deg,#3a3a3a,#262626);
 }
 
+/* ---------- Icon & Text ---------- */
 .card .icon {
-  flex:0 0 60px;
-  height:60px;
+  flex:0 0 70px;
+  height:70px;
   display:flex;
   align-items:center;
   justify-content:center;
 }
 .card .icon img {
-  max-width:60px;
-  max-height:60px;
+  max-width:70px;
+  max-height:70px;
   object-fit:contain;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,0.25));
 }
 
 .card .info { flex:1; }
-.card .info .name { font-size:1.1rem; font-weight:bold; margin-bottom:0.2rem; }
-.card .info .subtitle { font-size:0.8rem; color:#c0c0c0; }
+.card .info .name { font-size:1.2rem; font-weight:bold; margin-bottom:0.25rem; }
+.card .info .subtitle { font-size:0.85rem; color:#f2f2f2; opacity:0.9; }
 
 @media (max-width:600px) {
   .card { width:90%; }
-  .card .icon { flex:0 0 50px; height:50px; }
-  .card .icon img { max-width:50px; max-height:50px; }
+  .card .icon { flex:0 0 55px; height:55px; }
+  .card .icon img { max-width:55px; max-height:55px; }
 }
 </style>
 </head>
@@ -132,17 +136,17 @@ html, body {
   const wheel = document.querySelector('.wheel');
   const cards = Array.from(document.querySelectorAll('.card'));
   const total = cards.length;
-
-  // tighter spacing: smaller step (more overlap)
-  const angleStep = (2 * Math.PI) / (total * 1.5);  
+  const angleStep = (2 * Math.PI) / (total * 1.5);
 
   let offset = 0;
+  let velocity = 0;
   let dragging = false;
   let lastY = 0;
+  let animationActive = false; // control start after delay
 
   function render() {
-    const radiusY = 120;   // smaller radius → tighter vertical spacing
-    const depthZ  = 200;   
+    const radiusY = 170;
+    const depthZ  = 240;
 
     cards.forEach((card, i) => {
       const angle = (i + offset) * angleStep;
@@ -151,32 +155,54 @@ html, body {
       const y = s * radiusY;
       const depth = (c + 1) / 2;
       const z = depth * depthZ;
-      const scale   = 0.8 + depth * 0.4;
+      const scale   = 0.85 + depth * 0.35;
       const opacity = 0.15 + depth * 0.85;
-      const tiltX   = -s * 30;
+      const tiltX   = -s * 20;
 
       card.style.transform =
         `translate3d(-50%, ${y}px, ${z}px) rotateX(${tiltX}deg) scale(${scale})`;
       card.style.opacity = opacity;
       card.style.zIndex = 100 + Math.round(depth * 100);
+
+      const shadowAlpha = 0.25 + depth * 0.3;
+      const shadowBlur = 14 + depth * 22;
+      const shadowOffset = 4 + depth * 8;
       card.style.boxShadow =
-        depth > 0.05
-          ? `0 ${8 * depth}px ${25 * depth}px rgba(0,0,0,${0.5 * depth})`
-          : 'none';
+        `0 ${shadowOffset}px ${shadowBlur}px rgba(0,0,0,${shadowAlpha})`;
     });
   }
 
-  render();
+  function animate() {
+    if (animationActive) {
+      if (Math.abs(velocity) > 0.00001) {
+        offset += velocity;
+        velocity *= 0.95;
+      } else {
+        // gentle automatic rotation even when not scrolling
+        offset += 0.002;
+      }
+    }
+    render();
+    requestAnimationFrame(animate);
+  }
+
+  // delay start of animation by 5 seconds
+  setTimeout(() => {
+    animationActive = true;
+  }, 5000);
+
+  animate();
 
   wheel.addEventListener('wheel', (e) => {
     e.preventDefault();
-    offset += (e.deltaY || e.detail || e.wheelDelta) * 0.0013;
-    render();
+    const delta = e.deltaY || e.detail || e.wheelDelta;
+    velocity += delta * 0.00005;
   }, { passive:false });
 
   wheel.addEventListener('pointerdown', (e) => {
     dragging = true;
     lastY = e.clientY;
+    velocity = 0;
     wheel.setPointerCapture(e.pointerId);
   });
 
@@ -184,12 +210,12 @@ html, body {
     if (!dragging) return;
     const dy = e.clientY - lastY;
     lastY = e.clientY;
-    offset += dy * 0.012;
-    render();
+    offset += dy * 0.01;
+    velocity = dy * 0.0008;
   });
 
   ['pointerup', 'pointercancel', 'pointerleave'].forEach(evt =>
-    wheel.addEventListener(evt, () => dragging = false)
+    wheel.addEventListener(evt, () => { dragging = false; })
   );
 
   window.addEventListener('resize', render);

@@ -1,0 +1,173 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Wellness USA</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{
+  height:100%;width:100%;
+  font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;
+  background:#d9d9d9;      /* light grey background */
+  color:#111;              /* darker text for contrast */
+  overflow:hidden;
+}
+
+/* Whole scene */
+.wheel{
+  position:relative;
+  height:100vh;width:100%;
+  display:flex;align-items:center;justify-content:center;
+  background:#d9d9d9;
+  perspective:1000px;touch-action:none;overflow:hidden;
+}
+
+/* IR POD logo – inside same container, close to wheel */
+.ir-logo-fixed{
+  position:absolute;
+  left:10%;
+  top:50%;
+  transform:translateY(-50%);
+  width:140px;height:140px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;
+  box-shadow:0 0 30px rgba(0,0,0,0.25),0 0 50px rgba(0,0,0,0.15);
+  text-decoration:none;
+  transition:transform .4s ease,box-shadow .4s ease;
+  z-index:300;
+  background:#e0e0e0;
+}
+.ir-logo-fixed:hover{
+  transform:translateY(-50%) scale(1.08);
+  box-shadow:0 0 45px rgba(0,0,0,0.25),0 0 70px rgba(0,0,0,0.2);
+}
+.ir-logo-fixed img{
+  max-width:100%;max-height:100%;object-fit:contain;
+}
+
+/* Cards */
+.card{
+  position:absolute;
+  left:60%;
+  top:40%;
+  width:55%;max-width:360px;
+  transform-origin:center center;transform-style:preserve-3d;
+  opacity:0;border-radius:14px;overflow:hidden;
+  box-shadow:0 6px 16px rgba(0,0,0,.25);
+}
+.card a{
+  text-decoration:none;color:inherit;
+  display:flex;align-items:center;gap:1.1rem;
+  padding:.8rem 1rem;border-radius:inherit;
+  background:linear-gradient(145deg,#f1f1f1,#cccccc);
+}
+.card .icon{
+  flex:0 0 50px;height:50px;display:flex;align-items:center;justify-content:center;
+}
+.card .icon img{
+  max-width:50px;max-height:50px;object-fit:contain;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));
+}
+.card .info .name{font-size:1rem;font-weight:bold;margin-bottom:.2rem;}
+.card .info .subtitle{font-size:.8rem;color:#333;opacity:.9;}
+
+@media(max-width:800px){
+  .wheel{flex-direction:column;justify-content:flex-start;padding-top:1.5rem;}
+  .ir-logo-fixed{position:static;transform:none;margin-bottom:1rem;}
+  .ir-logo-fixed:hover{transform:scale(1.08);}
+  .card{left:50%;top:50%;width:70%;max-width:340px;}
+}
+</style>
+</head>
+
+<body>
+<div class="wheel">
+
+  <a href="http://10.10.52.243:8080/webvisu.htm" class="ir-logo-fixed">
+    <img src="file:///storage/emulated/0/DCIM/WSALogo.png" alt="IR Pod">
+  </a>
+
+  <div class="card">
+    <a href="https://www.youtube.com">
+      <div class="icon"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" alt="YouTube"></div>
+      <div class="info"><div class="name">YouTube</div><div class="subtitle">Watch videos online</div></div>
+    </a>
+  </div>
+
+  <div class="card">
+    <a href="https://www.netflix.com">
+      <div class="icon"><img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix"></div>
+      <div class="info"><div class="name">Netflix</div><div class="subtitle">Stream shows and movies</div></div>
+    </a>
+  </div>
+
+  <div class="card">
+    <a href="https://www.hulu.com">
+      <div class="icon"><img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Hulu_Logo.svg" alt="Hulu"></div>
+      <div class="info"><div class="name">Hulu</div><div class="subtitle">Stream TV shows and series</div></div>
+    </a>
+  </div>
+
+  <div class="card">
+    <a href="intent:#Intent;launchFlags=0x10200000;component=com.spotify.music/.MainActivity;end">
+      <div class="icon"><img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" alt="Spotify"></div>
+      <div class="info"><div class="name">Spotify</div><div class="subtitle">Listen to your music</div></div>
+    </a>
+  </div>
+
+  <div class="card">
+    <a href="https://www.disneyplus.com">
+      <div class="icon"><img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg" alt="Disney+"></div>
+      <div class="info"><div class="name">Disney+</div><div class="subtitle">Watch family favorites</div></div>
+    </a>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const wheel=document.querySelector('.wheel');
+  const cards=[...wheel.querySelectorAll('.card')];
+  const total=cards.length;
+  const angleStep=(2*Math.PI)/(total*1.5);
+  let offset=0,velocity=0,dragging=false,lastY=0,animationActive=false;
+
+  function render(){
+    const radiusY=140,depthZ=180;
+    cards.forEach((card,i)=>{
+      const angle=(i+offset)*angleStep;
+      const s=Math.sin(angle),c=Math.cos(angle);
+      const y=s*radiusY,depth=(c+1)/2,z=depth*depthZ;
+      const scale=0.8+depth*0.3,opacity=0.2+depth*0.8,tiltX=-s*18;
+      card.style.transform=`translate3d(-50%,${y}px,${z}px) rotateX(${tiltX}deg) scale(${scale})`;
+      card.style.opacity=opacity;
+      card.style.zIndex=100+Math.round(depth*100);
+    });
+  }
+
+  function animate(){
+    if(animationActive){
+      if(Math.abs(velocity)>0.00001){offset+=velocity;velocity*=0.96;}
+      else{offset+=0.004;}
+    }
+    render();requestAnimationFrame(animate);
+  }
+  setTimeout(()=>animationActive=true,5000);
+  animate();
+
+  wheel.addEventListener('wheel',e=>{e.preventDefault();velocity+=e.deltaY*0.00007;},{passive:false});
+  wheel.addEventListener('pointerdown',e=>{
+    dragging=true;lastY=e.clientY;velocity=0;wheel.setPointerCapture(e.pointerId);
+  });
+  wheel.addEventListener('pointermove',e=>{
+    if(!dragging)return;
+    const dy=e.clientY-lastY;lastY=e.clientY;
+    offset+=dy*0.012;velocity=dy*0.001;
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(evt=>wheel.addEventListener(evt,()=>dragging=false));
+})();
+</script>
+
+</body>
+</html>
