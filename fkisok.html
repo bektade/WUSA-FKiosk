@@ -16,47 +16,31 @@ html, body {
   overflow:hidden;
 }
 
-/* ---------- Vertical Wheel Container ---------- */
+/* ---------- 360° Vertical Wheel Container ---------- */
 .wheel {
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:flex-start;
+  position:relative;
   height:100vh;
   width:100%;
-  overflow-y:auto;       /* mouse wheel + touch */
-  overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;
-  padding:10vh 0;
-  gap:2.5vh;
-  perspective:1000px;    /* for 3D depth */
+  overflow:hidden;              /* no native scroll, we simulate rotation */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  perspective:1000px;           /* 3D depth */
   background:#2e2e2e;
+  touch-action:none;            /* allow custom drag handling */
 }
 
-/* Scrollbar (visible on desktop, can be hidden if you want) */
-.wheel::-webkit-scrollbar {
-  width:8px;
-}
-.wheel::-webkit-scrollbar-track {
-  background:#2e2e2e;
-}
-.wheel::-webkit-scrollbar-thumb {
-  background:#555;
-  border-radius:4px;
-}
-
-/* Top & bottom space so first/last can reach center */
-.spacer {
-  height:20vh;
-}
-
-/* ---------- App Row (icon + name) ---------- */
+/* ---------- App Card (icon + text) ---------- */
 .card {
+  position:absolute;
+  left:50%;
+  top:50%;
   width:80%;
   max-width:600px;
   transform-origin:center center;
-  transition:transform 0.18s ease-out, opacity 0.18s ease-out, box-shadow 0.18s ease-out;
-  opacity:0;             /* will be set in JS */
+  transform-style:preserve-3d;
+  transition:transform 0.15s ease-out, opacity 0.15s ease-out, box-shadow 0.15s ease-out;
+  opacity:0;
 }
 
 .card a {
@@ -85,7 +69,7 @@ html, body {
   display:block;
 }
 
-/* Text */
+/* Info text */
 .card .info {
   flex:1;
 }
@@ -120,8 +104,6 @@ html, body {
 
 <div class="wheel">
 
-  <div class="spacer"></div>
-
   <!-- YouTube -->
   <div class="card">
     <a href="https://www.youtube.com">
@@ -130,7 +112,7 @@ html, body {
       </div>
       <div class="info">
         <div class="name">YouTube</div>
-        <div class="subtitle">Open YouTube app / website</div>
+        <div class="subtitle">Watch videos online</div>
       </div>
     </a>
   </div>
@@ -156,7 +138,20 @@ html, body {
       </div>
       <div class="info">
         <div class="name">Netflix</div>
-        <div class="subtitle">Launch Netflix</div>
+        <div class="subtitle">Stream shows and movies</div>
+      </div>
+    </a>
+  </div>
+
+  <!-- Hulu -->
+  <div class="card">
+    <a href="https://www.hulu.com">
+      <div class="icon">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Hulu_Logo.svg" alt="Hulu">
+      </div>
+      <div class="info">
+        <div class="name">Hulu</div>
+        <div class="subtitle">Stream TV shows and series</div>
       </div>
     </a>
   </div>
@@ -169,12 +164,23 @@ html, body {
       </div>
       <div class="info">
         <div class="name">Spotify</div>
-        <div class="subtitle">Open Spotify app</div>
+        <div class="subtitle">Listen to your music</div>
       </div>
     </a>
   </div>
 
-  <div class="spacer"></div>
+  <!-- Disney+ -->
+  <div class="card">
+    <a href="https://www.disneyplus.com">
+      <div class="icon">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg" alt="Disney+">
+      </div>
+      <div class="info">
+        <div class="name">Disney+</div>
+        <div class="subtitle">Watch family favorites</div>
+      </div>
+    </a>
+  </div>
 
 </div>
 
@@ -182,56 +188,76 @@ html, body {
 (function() {
   const wheel = document.querySelector('.wheel');
   const cards = Array.from(document.querySelectorAll('.card'));
+  const total = cards.length;
+  const angleStep = (2 * Math.PI) / total;
 
-  function updateWheel() {
-    const rect = wheel.getBoundingClientRect();
-    const centerY = rect.top + rect.height / 2;
+  let offset = 0;          // continuous "virtual scroll"
+  let dragging = false;
+  let lastY = 0;
 
-    cards.forEach(card => {
-      const cRect = card.getBoundingClientRect();
-      const cardCenter = cRect.top + cRect.height / 2;
+  function render() {
+    const radiusY = 160;   // vertical radius (px)
+    const depthZ  = 220;   // how far they come out (px)
 
-      // distance from center normalized to -1..1
-      const dist = (cardCenter - centerY) / (rect.height / 2);
-      const abs = Math.min(Math.abs(dist), 1.2);  // allow a bit >1 for hiding
+    cards.forEach((card, i) => {
+      // angle around the circle; offset makes it spin infinitely
+      const angle = (i + offset) * angleStep;
 
-      // Rotate around X as if on a big wheel
-      const angle = dist * 55;                // degrees, positive = tilt away
-      // Bring front item slightly "out" of the screen
-      const depth = Math.max(0, 1 - abs);     // 1 in center, 0 at far
-      const translateZ = depth * 140;         // px
-      const scale = 1 + depth * 0.25;        // up to ~1.25 in center
+      const s = Math.sin(angle);  // vertical position
+      const c = Math.cos(angle);  // depth (front/back)
 
-      // Opacity: hide items that are "back side" of wheel
-      let opacity;
-      if (abs > 1.0) {
-        opacity = 0;                          // fully hidden in the back
-      } else {
-        opacity = 0.3 + depth * 0.7;          // 0.3 at edges -> 1 in center
-      }
+      const y = s * radiusY;
+      const depth = (c + 1) / 2;  // map -1..1 -> 0..1
+      const z = depth * depthZ;
 
-      // Shadow for depth (stronger in front, almost none at back)
-      const shadowStrength = depth;           // 0..1
-      const shadowY = 12 * shadowStrength;
-      const shadowBlur = 35 * shadowStrength;
-      const shadowAlpha = 0.65 * shadowStrength;
+      const scale   = 0.8 + depth * 0.4;         // slightly bigger in front
+      const opacity = 0.15 + depth * 0.85;       // fade to back
+      const tiltX   = -s * 35;                   // tilt as it goes over the top/bottom
 
       card.style.transform =
-        `translateZ(${translateZ.toFixed(1)}px) rotateX(${angle.toFixed(1)}deg) scale(${scale.toFixed(3)})`;
-      card.style.opacity = opacity.toFixed(3);
+        `translate3d(-50%, ${y}px, ${z}px) rotateX(${tiltX}deg) scale(${scale})`;
+      card.style.opacity = opacity;
       card.style.zIndex = String(100 + Math.round(depth * 100));
+
       card.style.boxShadow =
-        shadowStrength > 0
-          ? `0 ${shadowY.toFixed(1)}px ${shadowBlur.toFixed(1)}px rgba(0,0,0,${shadowAlpha.toFixed(2)})`
+        depth > 0.05
+          ? `0 ${8 * depth}px ${28 * depth}px rgba(0,0,0,${0.55 * depth})`
           : 'none';
     });
   }
 
-  updateWheel();
-  wheel.addEventListener('scroll', () => {
-    window.requestAnimationFrame(updateWheel);
+  render();
+
+  /* -------- Mouse wheel: rotate infinitely -------- */
+  wheel.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const delta = e.deltaY || e.detail || e.wheelDelta;
+    offset += delta * 0.0015;    // sensitivity
+    render();
+  }, { passive:false });
+
+  /* -------- Touch / drag (pointer events) -------- */
+  wheel.addEventListener('pointerdown', (e) => {
+    dragging = true;
+    lastY = e.clientY;
+    wheel.setPointerCapture(e.pointerId);
   });
-  window.addEventListener('resize', updateWheel);
+
+  wheel.addEventListener('pointermove', (e) => {
+    if (!dragging) return;
+    const dy = e.clientY - lastY;
+    lastY = e.clientY;
+    offset += dy * 0.012;        // drag sensitivity
+    render();
+  });
+
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(evt => {
+    wheel.addEventListener(evt, () => {
+      dragging = false;
+    });
+  });
+
+  window.addEventListener('resize', render);
 })();
 </script>
 
