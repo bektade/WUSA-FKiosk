@@ -1,0 +1,239 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Wellness USA</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{
+  height:100%;width:100%;
+  font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;
+  background:#d9d9d9;
+  color:#111;
+  overflow:hidden;
+}
+
+/* Whole scene */
+.wheel{
+  position:relative;
+  height:100vh;width:100%;
+  display:flex;align-items:center;justify-content:center;
+  background:#d9d9d9;
+  perspective:1000px;touch-action:none;overflow:hidden;
+}
+
+/* IR POD logo – rectangular with rounded corners */
+.ir-logo-fixed{
+  position:absolute;
+  left:10%;
+  top:50%;
+  transform: translateX(-1%) translateY(-30%) scale(1);
+  width:200px;
+  height:200px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:35px;
+  box-shadow:0 0 30px rgba(0,0,0,0.25),0 0 50px rgba(0,0,0,0.15);
+  text-decoration:none;
+  transition:transform .4s ease,box-shadow .4s ease;
+  z-index:300;
+  background:none;
+}
+.ir-logo-fixed:hover{
+  box-shadow:0 0 45px rgba(0,0,0,0.25),0 0 70px rgba(0,0,0,0.2);
+}
+.ir-logo-fixed img{
+  max-width:90%;max-height:70%;object-fit:contain;
+}
+
+/* Cards */
+.card{
+  position:absolute;
+  left:60%;
+  top:40%;
+  width:55%;max-width:360px;
+  transform-origin:center center;transform-style:preserve-3d;
+  opacity:1;border-radius:14px;overflow:hidden;
+  box-shadow:0 6px 16px rgba(0,0,0,.25);
+}
+.card a{
+  text-decoration:none;color:inherit;
+  display:flex;align-items:center;gap:1.1rem;
+  padding:.8rem 1rem;border-radius:inherit;
+  background:linear-gradient(145deg,#f1f1f1,#cccccc);
+}
+.card .icon{
+  flex:0 0 50px;height:50px;display:flex;align-items:center;justify-content:center;
+}
+.card .icon img{
+  max-width:50px;max-height:50px;object-fit:contain;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));
+}
+.card .info .name{font-size:1rem;font-weight:bold;margin-bottom:.2rem;}
+.card .info .subtitle{font-size:.8rem;color:#333;opacity:.9;}
+
+@media(max-width:800px){
+  .wheel{flex-direction:column;justify-content:flex-start;padding-top:1.5rem;}
+  .ir-logo-fixed{
+    position:static;
+    transform:none;
+    margin-bottom:1rem;
+  }
+  .ir-logo-fixed:hover{transform:scale(1.08);}
+  .card{left:50%;top:50%;width:70%;max-width:340px;}
+}
+</style>
+</head>
+
+<body>
+<div class="wheel">
+
+  <!-- IR POD main icon -->
+  <a href="http://10.10.52.243:8080/webvisu.htm" class="ir-logo-fixed">
+    <img src="file:///storage/emulated/0/DCIM/wellnessLogo.png" alt="IR Pod">
+  </a>
+
+  <!-- Chrome -->
+  <div class="card">
+    <a href="intent:#Intent;launchFlags=0x10200000;component=com.android.chrome/com.google.android.apps.chrome.Main;end">
+      <div class="icon"><img src="https://www.google.com/chrome/static/images/chrome-logo.svg" alt="Chrome"></div>
+      <div class="info"><div class="name">Chrome</div><div class="subtitle">Open Browser</div></div>
+    </a>
+  </div>
+
+  <!-- Netflix -->
+  <div class="card">
+    <a href="intent:#Intent;launchFlags=0x10200000;component=com.netflix.mediaclient/.ui.launch.UIWebViewActivity;end">
+      <div class="icon"><img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg" alt="Netflix"></div>
+      <div class="info"><div class="name">Netflix</div><div class="subtitle">Stream Movies</div></div>
+    </a>
+  </div>
+
+  <!-- Spotify -->
+  <div class="card">
+    <a href="intent:#Intent;launchFlags=0x10200000;component=com.spotify.music/.MainActivity;end">
+      <div class="icon"><img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" alt="Spotify"></div>
+      <div class="info"><div class="name">Spotify</div><div class="subtitle">Listen to Music</div></div>
+    </a>
+  </div>
+
+  <!-- YouTube -->
+  <div class="card">
+    <a href="intent:#Intent;launchFlags=0x10200000;component=com.google.android.youtube/.app.honeycomb.Shell$HomeActivity;end">
+      <div class="icon"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" alt="YouTube"></div>
+      <div class="info"><div class="name">YouTube</div><div class="subtitle">Watch Videos</div></div>
+    </a>
+  </div>
+
+  <!-- Disney+ -->
+  <div class="card">
+    <a href="intent:#Intent;launchFlags=0x10200000;component=com.disney.disneyplus/com.bamtechmedia.dominguez.main.MainActivity;end">
+      <div class="icon"><img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg" alt="Disney+"></div>
+      <div class="info"><div class="name">Disney+</div><div class="subtitle">Watch Family Shows</div></div>
+    </a>
+  </div>
+
+  <!-- Hulu -->
+  <div class="card">
+    <a href="intent:#Intent;launchFlags=0x10200000;component=com.hulu.plus/com.hulu.features.splash.SplashActivity;end">
+      <div class="icon"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Hulu_logo_%282018%29.svg/1920px-Hulu_logo_%282018%29.svg.png" alt="Hulu"></div>
+      <div class="info"><div class="name">Hulu</div><div class="subtitle">Stream TV Shows</div></div>
+    </a>
+  </div>
+
+  <!-- Prime Video -->
+  <div class="card">
+    <a href="intent:#Intent;launchFlags=0x10200000;component=com.amazon.avod.thirdpartyclient/.LauncherActivity;end">
+      <div class="icon"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Prime_Video_logo_%282024%29.svg/1920px-Prime_Video_logo_%282024%29.svg.png" alt="Prime Video"></div>
+      <div class="info"><div class="name">Prime Video</div><div class="subtitle">Watch Series</div></div>
+    </a>
+  </div>
+
+  <!-- YT Music -->
+  <div class="card">
+    <a href="intent:#Intent;launchFlags=0x10200000;component=com.google.android.apps.youtube.music/.activities.MusicActivity;end">
+      <div class="icon"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b0/YouTube_Music_icon_2024.svg" alt="YT Music"></div>
+      <div class="info"><div class="name">YT Music</div><div class="subtitle">Play Music</div></div>
+    </a>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const wheel=document.querySelector('.wheel');
+  const cards=[...wheel.querySelectorAll('.card')];
+  const total=cards.length;
+
+  // FULL CIRCLE: spread evenly over 2π (no gap)
+  const angleStep=(2*Math.PI)/total;
+
+  let offset=0,velocity=0,dragging=false,lastY=0,animationActive=true;
+
+  function render(){
+    const radiusY=120;
+    const depthZ=100;
+
+    cards.forEach((card,i)=>{
+      const angle=(i+offset)*angleStep;
+      const s=Math.sin(angle),c=Math.cos(angle);
+
+      const y=s*radiusY;
+      const depth=(c+1)/2;      // 0 at back, 1 at front
+      const z=depth*depthZ;
+      const scale=0.8+depth*0.3;
+      const tiltX=-s*18;
+
+      // keep a minimum opacity so the circle never "opens"
+      const opacityMin = 0.35;
+      const opacity = opacityMin + depth*(1 - opacityMin);
+
+      card.style.transform=`translate3d(-50%,${y}px,${z}px) rotateX(${tiltX}deg) scale(${scale})`;
+      card.style.opacity=opacity;
+      card.style.zIndex=100+Math.round(depth*100);
+    });
+  }
+
+  function animate(){
+    if(animationActive){
+      if(Math.abs(velocity)>0.00001){
+        offset+=velocity;
+        velocity*=0.96;
+      }else{
+        offset+=0.004;
+      }
+    }
+    render();
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+
+  wheel.addEventListener('wheel',e=>{
+    e.preventDefault();
+    velocity+=e.deltaY*0.00007;
+  },{passive:false});
+
+  wheel.addEventListener('pointerdown',e=>{
+    dragging=true;
+    lastY=e.clientY;
+    velocity=0;
+    wheel.setPointerCapture(e.pointerId);
+  });
+
+  wheel.addEventListener('pointermove',e=>{
+    if(!dragging)return;
+    const dy=e.clientY-lastY;
+    lastY=e.clientY;
+    offset+=dy*0.012;
+    velocity=dy*0.001;
+  });
+
+  ['pointerup','pointercancel','pointerleave'].forEach(evt=>
+    wheel.addEventListener(evt,()=>dragging=false)
+  );
+})();
+</script>
+
+</body>
+</html>
