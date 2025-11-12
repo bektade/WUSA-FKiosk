@@ -9,4 +9,4 @@ When an internet connection is available, entertainment apps like Netflix, YouTu
 
 
 
-![alt text](landingPage.png)
+![alt text](/src/landingPage.png)
